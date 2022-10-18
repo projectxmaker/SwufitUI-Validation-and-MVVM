@@ -9,10 +9,34 @@
 import Foundation
 
 class SignupViewModel: ObservableObject {
-    @Published var email = ""
-    @Published var password = ""
-    @Published var confirmPw = ""
-    var birthYear: Int = Calendar.current.dateComponents([.year], from: Date()).year!
+    @Published var email = "" {
+        didSet {
+            isValidEmail = isEmailValid()
+        }
+    }
+    
+    @Published var password = "" {
+        didSet {
+            isValidPassword = isPasswordValid()
+        }
+    }
+    
+    @Published var confirmPw = "" {
+        didSet {
+            isPasswordMatch = passwordsMatch()
+        }
+    }
+    
+    var birthYear: Int = Calendar.current.dateComponents([.year], from: Date()).year! {
+        didSet {
+            isValidAge = isAgeValid()
+        }
+    }
+    
+    var isValidEmail  = false
+    var isValidPassword  = false
+    var isPasswordMatch  = false
+    var isValidAge  = false
     
     // MARK: - Validation Functions
     
@@ -34,15 +58,15 @@ class SignupViewModel: ObservableObject {
         return emailTest.evaluate(with: email)
     }
     
-    func isValidAge() -> Bool {
+    func isAgeValid() -> Bool {
         (Calendar.current.dateComponents([.year], from: Date()).year! - birthYear) >= 21
     }
     
     var isSignUpComplete: Bool {
-        if !passwordsMatch() ||
-        !isPasswordValid() ||
-        !isEmailValid() ||
-            !isValidAge() {
+        if !isPasswordMatch ||
+        !isValidPassword ||
+        !isValidEmail ||
+            !isValidAge {
             return false
         }
         return true
@@ -51,7 +75,7 @@ class SignupViewModel: ObservableObject {
     // MARK: - Validation Prompt Strings
     
     var confirmPwPrompt: String {
-        if passwordsMatch() {
+        if isPasswordMatch {
             return ""
         } else {
             return "Password fields do not match"
@@ -59,7 +83,7 @@ class SignupViewModel: ObservableObject {
     }
     
     var emailPrompt: String {
-        if isEmailValid() {
+        if isValidEmail {
             return ""
         } else {
             return "Enter a valid email address"
@@ -67,7 +91,7 @@ class SignupViewModel: ObservableObject {
     }
     
     var passwordPrompt: String {
-        if isPasswordValid() {
+        if isValidPassword {
             return ""
         } else {
             return "Must be between 8 and 15 characters containing at least one number and one capital letter"
@@ -75,7 +99,7 @@ class SignupViewModel: ObservableObject {
     }
     
     var agePrompt: String {
-        if isValidAge() {
+        if isValidAge {
             return "Year of birth"
         } else {
             return "Year of birth (must be 21 years old)"
